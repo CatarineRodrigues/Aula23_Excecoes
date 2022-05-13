@@ -1,66 +1,86 @@
 package lista25_execoes.exerc3
 
 import java.math.BigDecimal
-import java.math.BigInteger
-
-
-/*
-g. Após a conversão o sistema deve mostrar a mensagem: “A [MOEDA] na cotação de hoje [DIA ATUAL]
-está em [VALOR DA COTAÇÃO], o valor que pediu para converter de [VALOR INSERIDO] em reais é
-R$[VALOR CONVERTIDO]”.
-h. Por fim, o programa deve perguntar se a pessoa deseja fazer outra conversão.
-i. Se sim, o programa reinicia.
-ii. Se não, o programa encerra.*/
+import kotlin.system.exitProcess
 
 class ConversorMoedas {
-    private var tipoMoeda = ""
-    private var valorMoeda: BigDecimal = BigDecimal.ZERO
-    private var valorConvertido: BigDecimal = BigDecimal.ZERO
-    private var valorCotacao: BigDecimal = BigDecimal.ZERO
 
     fun inicioPrograma() {
         println("Boas vindas ao conversor de moedas")
-        println("Qual moeda deseja converter?\n Dólar americano, Dólar canadense, Euro ou Libra Esterlina?")
-        try {
-            tipoMoeda = readln().lowercase()
+        val tipoMoeda = pedirTipoMoeda()
+        println("Lembrete: Este programa só converte para Real (R$)")
+        val valorMoeda = armazenaValorMoeda()
+        val valorCotacao = valorContacaoMoedas(tipoMoeda)
+        val valorConvertido = converterMoedas(valorMoeda, valorCotacao)
+        exibirValorConvertido(tipoMoeda, valorCotacao, valorMoeda, valorConvertido)
+        perguntaRodarNovamente()
+    }
+
+    private fun pedirTipoMoeda(): String {
+        println(MSG_TIPO_MOEDA)
+        return try {
+            val tipoMoeda = readln().lowercase()
+            tipoMoeda
         } catch (exception: IllegalArgumentException) {
             println(exception.message)
-            println("Tipo de moeda inválido")
+            println(MSG_OPCAO_INVALIDA)
+            this.pedirTipoMoeda()
         }
-        println("Lembrete: Este programa só converte para Real (R$)")
+    }
+
+    private fun armazenaValorMoeda(): BigDecimal {
         println("Insira o valor a ser convertido: ")
-        try {
-            valorMoeda = readln().toBigDecimal()
+        return try {
+            var valorMoeda = readln().toBigDecimal()
             while (valorMoeda <= BigDecimal(0.0)) {
                 println("Valor inválido, por favor, tente novamente")
                 valorMoeda = readln().toBigDecimal()
             }
+            valorMoeda
         } catch (exception: NumberFormatException) {
             println(exception.message)
             println("Para moeda, o valor monetário deve ser um número decimal")
+            this.armazenaValorMoeda()
         }
-        conversor()
-        println(
-            "A moeda $tipoMoeda na cotação de hoje [DIA ATUAL] está em [VALOR DA COTAÇÃO], " +
-                    "o valor que pediu para converter de $valorMoeda em reais é R$$valorConvertido"
-        )
     }
 
-    fun conversor(): BigDecimal {
+    private fun valorContacaoMoedas(tipoMoeda: String): BigDecimal {
+        var valorCotacao: BigDecimal = BigDecimal.ZERO
         when (tipoMoeda) {
-            "Dólar americano" -> valorCotacao = BigDecimal(5.14)
+            "dólar americano" -> valorCotacao = BigDecimal(5.14)
             "dólar canadense" -> valorCotacao = BigDecimal(3.96)
             "euro" -> valorCotacao = BigDecimal(5.41)
             "libra esterlina" -> valorCotacao = BigDecimal(6.29)
         }
-        valorConvertido = (valorMoeda * valorCotacao)
-
-        return valorConvertido
+        return valorCotacao
     }
 
-}/*
+    private fun converterMoedas(valorMoeda: BigDecimal, valorCotacao: BigDecimal) = (valorMoeda * valorCotacao)
 
-f. Após as entradas, o sistema deve fazer a devida conversão da moeda escolhida para Real (R$) de
-acordo com a cotação do dia. Você pode pegar o valor do dia no google e deixar estática em alguma
-parte da aplicação.
-*/
+    private fun exibirValorConvertido(
+        tipoMoeda: String,
+        valorCotacao: BigDecimal,
+        valorMoeda: BigDecimal,
+        valorConvertido: BigDecimal
+    ) {
+        println("A moeda $tipoMoeda na cotação de hoje está em $valorCotacao, o valor que pediu para converter de $valorMoeda em reais é R$$valorConvertido")
+    }
+
+    private fun perguntaRodarNovamente() {
+        try {
+            println(MSG_DESEJA_NOVA_COTACAO)
+            println("1-SIM ou 2-NÃO/SAIR")
+            when (readln().uppercase()) {
+                "1","SIM" -> inicioPrograma()
+                "2","NÃO","NAO","SAIR" -> {
+                    println("Obrigado por usar nosso sistema!")
+                    exitProcess(0)
+                }
+                else -> perguntaRodarNovamente()
+            }
+        } catch (e: Exception) {
+            println(MSG_OPCAO_INVALIDA)
+            perguntaRodarNovamente()
+        }
+    }
+}
